@@ -8,8 +8,10 @@ backend_dir = root_dir / "backend"
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import pandas as pd
 import numpy as np
 from data_loader import get_stock_data, SUPPORTED_STOCKS
@@ -133,16 +135,10 @@ def analyze_ticker(ticker: str) -> Dict[str, Any]:
     _CACHE[ticker] = result
     return result
 
-@app.get("/")
-def root():
-    return {
-        "name": "StockSense API",
-        "status": "online",
-        "version": "1.0.0",
-        "supported_stocks": list(SUPPORTED_STOCKS.keys())
-    }
+# APIRouter for endpoints
+router = APIRouter()
 
-@app.get("/api/stocks")
+@router.get("/stocks")
 def get_stocks():
     stocks_list = [
         {"ticker": ticker, "name": name, "exchange": "NSE"}
@@ -150,7 +146,7 @@ def get_stocks():
     ]
     return {"success": True, "data": stocks_list, "error": None}
 
-@app.get("/api/stock/{ticker}")
+@router.get("/stock/{ticker}")
 def get_stock_overview(ticker: str):
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
@@ -170,7 +166,7 @@ def get_stock_overview(ticker: str):
     except Exception as e:
         return {"success": False, "data": None, "error": str(e)}
 
-@app.get("/api/prediction/{ticker}")
+@router.get("/prediction/{ticker}")
 def get_stock_prediction(ticker: str):
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
@@ -191,7 +187,7 @@ def get_stock_prediction(ticker: str):
     except Exception as e:
         return {"success": False, "data": None, "error": str(e)}
 
-@app.get("/api/metrics/{ticker}")
+@router.get("/metrics/{ticker}")
 def get_model_metrics(ticker: str):
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
@@ -201,7 +197,7 @@ def get_model_metrics(ticker: str):
     except Exception as e:
         return {"success": False, "data": None, "error": str(e)}
 
-@app.get("/api/backtest/{ticker}")
+@router.get("/backtest/{ticker}")
 def get_backtest_results(ticker: str):
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
@@ -211,7 +207,7 @@ def get_backtest_results(ticker: str):
     except Exception as e:
         return {"success": False, "data": None, "error": str(e)}
 
-@app.get("/api/analyze/{ticker}")
+@router.get("/analyze/{ticker}")
 def get_full_analysis(ticker: str):
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
@@ -220,3 +216,40 @@ def get_full_analysis(ticker: str):
         return {"success": True, "data": data, "error": None}
     except Exception as e:
         return {"success": False, "data": None, "error": str(e)}
+
+# Mount router at BOTH /api and / so all paths resolve
+app.include_router(router, prefix="/api")
+app.include_router(router, prefix="")
+
+# Resolve frontend distribution directory
+dist_dir = root_dir / "dist"
+if not dist_dir.exists():
+    dist_dir = root_dir / "frontend" / "dist"
+
+# Mount /assets static directory
+assets_dir = dist_dir / "assets"
+if assets_dir.exists():
+    app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+@app.get("/")
+def serve_root():
+    index_file = dist_dir / "index.html"
+    if index_file.is_file():
+        return FileResponse(index_file)
+    return {
+        "name": "StockSense API",
+        "status": "online",
+        "version": "1.0.0",
+        "supported_stocks": list(SUPPORTED_STOCKS.keys())
+    }
+
+@app.get("/{full_path:path}")
+def serve_fallback(full_path: str):
+    # Check if a static file was directly requested
+    requested = dist_dir / full_path
+    if requested.is_file():
+        return FileResponse(requested)
+    index_file = dist_dir / "index.html"
+    if index_file.is_file():
+        return FileResponse(index_file)
+    raise HTTPException(status_code=404, detail="File not found")
