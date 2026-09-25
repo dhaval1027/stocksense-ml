@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from typing import Dict, Any, List
+from fastapi.middleware.cors import CORSMiddleware
 
 # Ensure api directory is on sys.path for direct imports
 api_dir = Path(__file__).resolve().parent
@@ -22,7 +23,9 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://stocksense-ml.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
