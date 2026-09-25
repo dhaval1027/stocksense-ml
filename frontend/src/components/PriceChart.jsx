@@ -44,10 +44,11 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function PriceChart({ chartData, ticker }) {
+export default function PriceChart({ chartData, data, ticker }) {
   const [showSMA, setShowSMA] = useState(true);
+  const actualData = chartData || data || [];
 
-  if (!chartData || chartData.length === 0) {
+  if (!actualData || actualData.length === 0) {
     return (
       <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400">
         No price history available.
@@ -56,10 +57,10 @@ export default function PriceChart({ chartData, ticker }) {
   }
 
   // Calculate dynamic min/max for clean Y-axis domain
-  const prices = chartData.map(d => d.close);
+  const prices = actualData.map(d => d.close);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
-  const padding = (maxPrice - minPrice) * 0.05;
+  const padding = (maxPrice - minPrice) * 0.05 || 10;
   const yDomain = [Math.floor(minPrice - padding), Math.ceil(maxPrice + padding)];
 
   return (
@@ -89,7 +90,7 @@ export default function PriceChart({ chartData, ticker }) {
 
       <div className="h-72 sm:h-80 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <LineChart data={actualData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
             <XAxis
               dataKey="date"

@@ -173,7 +173,7 @@ export default function App() {
             <SummaryCards data={data} />
 
             {/* 4. Interactive Price & SMA Chart */}
-            <PriceChart data={data.chart_data} ticker={data.ticker} />
+            <PriceChart chartData={data.chart_data} data={data.chart_data} ticker={data.ticker} />
 
             {/* 5. Technical Indicators Grid */}
             <Indicators indicators={data.indicators} />
