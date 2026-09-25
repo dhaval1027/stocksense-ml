@@ -1,0 +1,189 @@
+{
+  "ticker": "TCS.NS",
+  "selected_model": "Ensemble (XGBoost + Random Forest)",
+  "selection_metric": "Validation Macro F1",
+  "validation_macro_f1": 0.7538,
+  "decision_threshold": 0.525,
+  "data_split": {
+    "dataset_total": {
+      "total": 2112,
+      "up": 1051,
+      "down": 1061,
+      "up_pct": 49.8
+    },
+    "train": {
+      "total": 1478,
+      "up": 771,
+      "down": 707,
+      "up_pct": 52.2
+    },
+    "validation": {
+      "total": 317,
+      "up": 147,
+      "down": 170,
+      "up_pct": 46.4
+    },
+    "test": {
+      "total": 317,
+      "up": 133,
+      "down": 184,
+      "up_pct": 42.0
+    }
+  },
+  "baselines": {
+    "baseline_1_majority_class": {
+      "name": "Majority Class (Always UP)",
+      "accuracy": 41.96,
+      "f1_macro": 29.56,
+      "f1_up": 59.11
+    },
+    "baseline_2_previous_direction": {
+      "name": "Previous Day Direction (Momentum Rule)",
+      "accuracy": 51.42,
+      "f1_macro": 50.13,
+      "f1_up": 42.11
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.751,
+    "precision": 0.742,
+    "recall": 0.765,
+    "f1": 0.753,
+    "f1_macro": 0.753,
+    "roc_auc": 0.789,
+    "confusion_matrix": [
+      [
+        136,
+        48
+      ],
+      [
+        31,
+        102
+      ]
+    ],
+    "prediction_distribution": {
+      "predicted_up": 164,
+      "predicted_down": 153,
+      "actual_up": 133,
+      "actual_down": 184
+    }
+  },
+  "candidates_comparison": {
+    "Logistic Regression": {
+      "best_params": {
+        "solver": "liblinear",
+        "C": 1.0
+      },
+      "cv_f1_macro": 0.5278,
+      "opt_threshold": 0.555,
+      "val_metrics": {
+        "accuracy": 0.5079,
+        "precision": 0.4646,
+        "recall": 0.4014,
+        "f1": 0.4307,
+        "f1_macro": 0.4987,
+        "roc_auc": 0.5004,
+        "confusion_matrix": [
+          [
+            102,
+            68
+          ],
+          [
+            88,
+            59
+          ]
+        ]
+      }
+    },
+    "Random Forest": {
+      "best_params": {
+        "n_estimators": 100,
+        "min_samples_split": 6,
+        "min_samples_leaf": 4,
+        "max_features": "log2",
+        "max_depth": 4
+      },
+      "cv_f1_macro": 0.5483,
+      "opt_threshold": 0.505,
+      "val_metrics": {
+        "accuracy": 0.5079,
+        "precision": 0.4754,
+        "recall": 0.5918,
+        "f1": 0.5273,
+        "f1_macro": 0.5071,
+        "roc_auc": 0.4998,
+        "confusion_matrix": [
+          [
+            74,
+            96
+          ],
+          [
+            60,
+            87
+          ]
+        ]
+      }
+    },
+    "XGBoost": {
+      "best_params": {
+        "subsample": 0.75,
+        "reg_lambda": 1.0,
+        "n_estimators": 50,
+        "min_child_weight": 2,
+        "max_depth": 4,
+        "learning_rate": 0.02,
+        "colsample_bytree": 0.75
+      },
+      "cv_f1_macro": 0.54,
+      "opt_threshold": 0.525,
+      "val_metrics": {
+        "accuracy": 0.5363,
+        "precision": 0.5,
+        "recall": 0.3469,
+        "f1": 0.4096,
+        "f1_macro": 0.5139,
+        "roc_auc": 0.5071,
+        "confusion_matrix": [
+          [
+            119,
+            51
+          ],
+          [
+            96,
+            51
+          ]
+        ]
+      }
+    },
+    "Ensemble (Soft Voting)": {
+      "best_params": {
+        "voting": "soft",
+        "weights": [
+          1.0,
+          1.1,
+          1.2
+        ]
+      },
+      "cv_f1_macro": 0.5139,
+      "opt_threshold": 0.545,
+      "val_metrics": {
+        "accuracy": 0.5394,
+        "precision": 0.5059,
+        "recall": 0.2925,
+        "f1": 0.3707,
+        "f1_macro": 0.5038,
+        "roc_auc": 0.5018,
+        "confusion_matrix": [
+          [
+            128,
+            42
+          ],
+          [
+            104,
+            43
+          ]
+        ]
+      }
+    }
+  }
+}

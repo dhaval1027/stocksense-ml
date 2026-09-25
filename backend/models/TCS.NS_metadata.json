@@ -1,0 +1,43 @@
+{
+  "ticker": "TCS.NS",
+  "selected_model": "Ensemble (XGBoost + Random Forest)",
+  "threshold": 0.525,
+  "feature_names": [
+    "return_1d",
+    "return_5d",
+    "return_10d",
+    "intraday_return",
+    "range_ratio",
+    "upper_wick",
+    "lower_wick",
+    "sma_10_ratio",
+    "sma_20_ratio",
+    "sma_50_ratio",
+    "ema_10_ratio",
+    "ema_20_ratio",
+    "ema_cross_ratio",
+    "momentum_10d",
+    "rsi_14",
+    "rsi_slope_3d",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "macd_hist_slope",
+    "stoch_k",
+    "stoch_d",
+    "bb_percent_b",
+    "volatility_20d",
+    "volume_change_1d",
+    "volume_ratio_20d",
+    "vol_mom_5d"
+  ],
+  "best_parameters": {
+    "subsample": 0.75,
+    "reg_lambda": 1.0,
+    "n_estimators": 50,
+    "min_child_weight": 2,
+    "max_depth": 4,
+    "learning_rate": 0.02,
+    "colsample_bytree": 0.75
+  }
+}

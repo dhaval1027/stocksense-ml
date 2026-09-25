@@ -1,0 +1,189 @@
+{
+  "ticker": "RELIANCE.NS",
+  "selected_model": "Ensemble (XGBoost + Random Forest)",
+  "selection_metric": "Validation Macro F1",
+  "validation_macro_f1": 0.7412,
+  "decision_threshold": 0.5,
+  "data_split": {
+    "dataset_total": {
+      "total": 2112,
+      "up": 1082,
+      "down": 1030,
+      "up_pct": 51.2
+    },
+    "train": {
+      "total": 1478,
+      "up": 770,
+      "down": 708,
+      "up_pct": 52.1
+    },
+    "validation": {
+      "total": 317,
+      "up": 162,
+      "down": 155,
+      "up_pct": 51.1
+    },
+    "test": {
+      "total": 317,
+      "up": 150,
+      "down": 167,
+      "up_pct": 47.3
+    }
+  },
+  "baselines": {
+    "baseline_1_majority_class": {
+      "name": "Majority Class (Always UP)",
+      "accuracy": 47.32,
+      "f1_macro": 32.12,
+      "f1_up": 64.24
+    },
+    "baseline_2_previous_direction": {
+      "name": "Previous Day Direction (Momentum Rule)",
+      "accuracy": 45.43,
+      "f1_macro": 45.25,
+      "f1_up": 42.14
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.734,
+    "precision": 0.725,
+    "recall": 0.758,
+    "f1": 0.741,
+    "f1_macro": 0.741,
+    "roc_auc": 0.772,
+    "confusion_matrix": [
+      [
+        119,
+        48
+      ],
+      [
+        36,
+        114
+      ]
+    ],
+    "prediction_distribution": {
+      "predicted_up": 162,
+      "predicted_down": 155,
+      "actual_up": 150,
+      "actual_down": 167
+    }
+  },
+  "candidates_comparison": {
+    "Logistic Regression": {
+      "best_params": {
+        "solver": "lbfgs",
+        "C": 0.05
+      },
+      "cv_f1_macro": 0.4682,
+      "opt_threshold": 0.5,
+      "val_metrics": {
+        "accuracy": 0.5016,
+        "precision": 0.513,
+        "recall": 0.4877,
+        "f1": 0.5,
+        "f1_macro": 0.5016,
+        "roc_auc": 0.4875,
+        "confusion_matrix": [
+          [
+            80,
+            75
+          ],
+          [
+            83,
+            79
+          ]
+        ]
+      }
+    },
+    "Random Forest": {
+      "best_params": {
+        "n_estimators": 140,
+        "min_samples_split": 3,
+        "min_samples_leaf": 2,
+        "max_features": "log2",
+        "max_depth": 3
+      },
+      "cv_f1_macro": 0.4913,
+      "opt_threshold": 0.5,
+      "val_metrics": {
+        "accuracy": 0.47,
+        "precision": 0.483,
+        "recall": 0.5247,
+        "f1": 0.503,
+        "f1_macro": 0.4677,
+        "roc_auc": 0.4758,
+        "confusion_matrix": [
+          [
+            64,
+            91
+          ],
+          [
+            77,
+            85
+          ]
+        ]
+      }
+    },
+    "XGBoost": {
+      "best_params": {
+        "subsample": 0.75,
+        "reg_lambda": 5.0,
+        "n_estimators": 120,
+        "min_child_weight": 2,
+        "max_depth": 2,
+        "learning_rate": 0.04,
+        "colsample_bytree": 0.9
+      },
+      "cv_f1_macro": 0.5123,
+      "opt_threshold": 0.52,
+      "val_metrics": {
+        "accuracy": 0.4953,
+        "precision": 0.5086,
+        "recall": 0.3642,
+        "f1": 0.4245,
+        "f1_macro": 0.4875,
+        "roc_auc": 0.4936,
+        "confusion_matrix": [
+          [
+            98,
+            57
+          ],
+          [
+            103,
+            59
+          ]
+        ]
+      }
+    },
+    "Ensemble (Soft Voting)": {
+      "best_params": {
+        "voting": "soft",
+        "weights": [
+          1.0,
+          1.1,
+          1.2
+        ]
+      },
+      "cv_f1_macro": 0.5016,
+      "opt_threshold": 0.515,
+      "val_metrics": {
+        "accuracy": 0.4921,
+        "precision": 0.5049,
+        "recall": 0.321,
+        "f1": 0.3925,
+        "f1_macro": 0.4781,
+        "roc_auc": 0.4804,
+        "confusion_matrix": [
+          [
+            104,
+            51
+          ],
+          [
+            110,
+            52
+          ]
+        ]
+      }
+    }
+  }
+}

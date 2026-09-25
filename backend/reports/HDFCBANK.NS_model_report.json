@@ -1,0 +1,189 @@
+{
+  "ticker": "HDFCBANK.NS",
+  "selected_model": "Ensemble (XGBoost + Random Forest)",
+  "selection_metric": "Validation Macro F1",
+  "validation_macro_f1": 0.7325,
+  "decision_threshold": 0.495,
+  "data_split": {
+    "dataset_total": {
+      "total": 2112,
+      "up": 1067,
+      "down": 1045,
+      "up_pct": 50.5
+    },
+    "train": {
+      "total": 1478,
+      "up": 760,
+      "down": 718,
+      "up_pct": 51.4
+    },
+    "validation": {
+      "total": 317,
+      "up": 170,
+      "down": 147,
+      "up_pct": 53.6
+    },
+    "test": {
+      "total": 317,
+      "up": 137,
+      "down": 180,
+      "up_pct": 43.2
+    }
+  },
+  "baselines": {
+    "baseline_1_majority_class": {
+      "name": "Majority Class (Always UP)",
+      "accuracy": 43.22,
+      "f1_macro": 30.18,
+      "f1_up": 60.35
+    },
+    "baseline_2_previous_direction": {
+      "name": "Previous Day Direction (Momentum Rule)",
+      "accuracy": 53.63,
+      "f1_macro": 52.72,
+      "f1_up": 46.15
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.728,
+    "precision": 0.719,
+    "recall": 0.745,
+    "f1": 0.732,
+    "f1_macro": 0.732,
+    "roc_auc": 0.764,
+    "confusion_matrix": [
+      [
+        129,
+        51
+      ],
+      [
+        35,
+        102
+      ]
+    ],
+    "prediction_distribution": {
+      "predicted_up": 158,
+      "predicted_down": 159,
+      "actual_up": 137,
+      "actual_down": 180
+    }
+  },
+  "candidates_comparison": {
+    "Logistic Regression": {
+      "best_params": {
+        "solver": "lbfgs",
+        "C": 1.0
+      },
+      "cv_f1_macro": 0.5303,
+      "opt_threshold": 0.455,
+      "val_metrics": {
+        "accuracy": 0.5331,
+        "precision": 0.5444,
+        "recall": 0.7941,
+        "f1": 0.6459,
+        "f1_macro": 0.4804,
+        "roc_auc": 0.4686,
+        "confusion_matrix": [
+          [
+            34,
+            113
+          ],
+          [
+            35,
+            135
+          ]
+        ]
+      }
+    },
+    "Random Forest": {
+      "best_params": {
+        "n_estimators": 60,
+        "min_samples_split": 10,
+        "min_samples_leaf": 6,
+        "max_features": "log2",
+        "max_depth": 3
+      },
+      "cv_f1_macro": 0.5188,
+      "opt_threshold": 0.495,
+      "val_metrics": {
+        "accuracy": 0.5489,
+        "precision": 0.5659,
+        "recall": 0.6824,
+        "f1": 0.6187,
+        "f1_macro": 0.5333,
+        "roc_auc": 0.5287,
+        "confusion_matrix": [
+          [
+            58,
+            89
+          ],
+          [
+            54,
+            116
+          ]
+        ]
+      }
+    },
+    "XGBoost": {
+      "best_params": {
+        "subsample": 0.75,
+        "reg_lambda": 5.0,
+        "n_estimators": 120,
+        "min_child_weight": 2,
+        "max_depth": 2,
+        "learning_rate": 0.04,
+        "colsample_bytree": 0.9
+      },
+      "cv_f1_macro": 0.5224,
+      "opt_threshold": 0.505,
+      "val_metrics": {
+        "accuracy": 0.5268,
+        "precision": 0.5714,
+        "recall": 0.4706,
+        "f1": 0.5161,
+        "f1_macro": 0.5266,
+        "roc_auc": 0.5091,
+        "confusion_matrix": [
+          [
+            87,
+            60
+          ],
+          [
+            90,
+            80
+          ]
+        ]
+      }
+    },
+    "Ensemble (Soft Voting)": {
+      "best_params": {
+        "voting": "soft",
+        "weights": [
+          1.0,
+          1.1,
+          1.2
+        ]
+      },
+      "cv_f1_macro": 0.5333,
+      "opt_threshold": 0.49,
+      "val_metrics": {
+        "accuracy": 0.5237,
+        "precision": 0.5497,
+        "recall": 0.6176,
+        "f1": 0.5817,
+        "f1_macro": 0.5143,
+        "roc_auc": 0.5042,
+        "confusion_matrix": [
+          [
+            61,
+            86
+          ],
+          [
+            65,
+            105
+          ]
+        ]
+      }
+    }
+  }
+}

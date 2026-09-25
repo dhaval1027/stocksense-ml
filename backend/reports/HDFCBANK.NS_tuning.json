@@ -1,0 +1,138 @@
+{
+  "ticker": "HDFCBANK.NS",
+  "selected_model": "XGBoost",
+  "selection_metric": "Validation Balanced Score (60% F1 + 40% Acc)",
+  "validation_score": 0.5878,
+  "data_split": {
+    "train_samples": 1478,
+    "val_samples": 317,
+    "test_samples": 317
+  },
+  "test_metrics": {
+    "accuracy": 0.4953,
+    "precision": 0.4511,
+    "recall": 0.7737,
+    "f1": 0.5699,
+    "roc_auc": 0.5259,
+    "confusion_matrix": [
+      [
+        51,
+        129
+      ],
+      [
+        31,
+        106
+      ]
+    ]
+  },
+  "candidates": {
+    "Logistic Regression": {
+      "best_params": {
+        "solver": "lbfgs",
+        "C": 0.01
+      },
+      "cv_f1_score": 0.605,
+      "val_metrics": {
+        "accuracy": 0.5174,
+        "precision": 0.5371,
+        "recall": 0.7235,
+        "f1": 0.6165,
+        "roc_auc": 0.4952,
+        "confusion_matrix": [
+          [
+            41,
+            106
+          ],
+          [
+            47,
+            123
+          ]
+        ]
+      }
+    },
+    "Random Forest": {
+      "best_params": {
+        "n_estimators": 75,
+        "min_samples_split": 10,
+        "min_samples_leaf": 6,
+        "max_features": "log2",
+        "max_depth": 3
+      },
+      "cv_f1_score": 0.5706,
+      "val_metrics": {
+        "accuracy": 0.511,
+        "precision": 0.5342,
+        "recall": 0.6882,
+        "f1": 0.6015,
+        "roc_auc": 0.4819,
+        "confusion_matrix": [
+          [
+            45,
+            102
+          ],
+          [
+            53,
+            117
+          ]
+        ]
+      }
+    },
+    "XGBoost": {
+      "best_params": {
+        "subsample": 0.75,
+        "reg_lambda": 1.0,
+        "n_estimators": 60,
+        "min_child_weight": 2,
+        "max_depth": 4,
+        "learning_rate": 0.02,
+        "colsample_bytree": 0.75
+      },
+      "cv_f1_score": 0.544,
+      "val_metrics": {
+        "accuracy": 0.5363,
+        "precision": 0.5525,
+        "recall": 0.7118,
+        "f1": 0.6221,
+        "roc_auc": 0.5208,
+        "confusion_matrix": [
+          [
+            49,
+            98
+          ],
+          [
+            49,
+            121
+          ]
+        ]
+      }
+    },
+    "Ensemble (Soft Voting)": {
+      "best_params": {
+        "weights": [
+          1.0,
+          1.2,
+          1.5
+        ],
+        "voting": "soft"
+      },
+      "cv_f1_score": 0.5878,
+      "val_metrics": {
+        "accuracy": 0.5205,
+        "precision": 0.5402,
+        "recall": 0.7118,
+        "f1": 0.6142,
+        "roc_auc": 0.5092,
+        "confusion_matrix": [
+          [
+            44,
+            103
+          ],
+          [
+            49,
+            121
+          ]
+        ]
+      }
+    }
+  }
+}
