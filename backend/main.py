@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from data_loader import SUPPORTED_STOCKS
 from prediction import generate_stock_analysis, get_or_train_model
@@ -18,7 +18,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for local React/Vite development
+# Enable CORS for frontend requests from any domain (Vercel, Localhost, etc.)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,7 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+router = APIRouter()
+
+@router.get("/")
 def root():
     return {
         "name": "StockSense API",
@@ -36,22 +38,16 @@ def root():
         "supported_stocks": list(SUPPORTED_STOCKS.keys())
     }
 
-@app.get("/api/stocks", response_model=ApiResponse)
+@router.get("/stocks", response_model=ApiResponse)
 def get_stocks():
-    """
-    Returns the list of available Indian stocks for analysis.
-    """
     stocks = [
         {"ticker": ticker, "name": name, "exchange": "NSE"}
         for ticker, name in SUPPORTED_STOCKS.items()
     ]
     return ApiResponse(success=True, data=stocks)
 
-@app.get("/api/stock/{ticker}", response_model=ApiResponse)
+@router.get("/stock/{ticker}", response_model=ApiResponse)
 def get_stock_overview(ticker: str):
-    """
-    Returns latest price, daily change, and chart data for the ticker.
-    """
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
     try:
@@ -70,11 +66,8 @@ def get_stock_overview(ticker: str):
     except Exception as e:
         return ApiResponse(success=False, error=str(e))
 
-@app.get("/api/prediction/{ticker}", response_model=ApiResponse)
+@router.get("/prediction/{ticker}", response_model=ApiResponse)
 def get_stock_prediction(ticker: str):
-    """
-    Returns the next trading day ML direction prediction and confidence.
-    """
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
     try:
@@ -94,11 +87,8 @@ def get_stock_prediction(ticker: str):
     except Exception as e:
         return ApiResponse(success=False, error=str(e))
 
-@app.get("/api/metrics/{ticker}", response_model=ApiResponse)
+@router.get("/metrics/{ticker}", response_model=ApiResponse)
 def get_model_metrics(ticker: str):
-    """
-    Returns evaluation metrics from the untouched test set.
-    """
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
     try:
@@ -107,11 +97,8 @@ def get_model_metrics(ticker: str):
     except Exception as e:
         return ApiResponse(success=False, error=str(e))
 
-@app.get("/api/backtest/{ticker}", response_model=ApiResponse)
+@router.get("/backtest/{ticker}", response_model=ApiResponse)
 def get_backtest_results(ticker: str):
-    """
-    Returns backtest performance of the ML strategy vs Buy & Hold on the test set.
-    """
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
     try:
@@ -120,12 +107,8 @@ def get_backtest_results(ticker: str):
     except Exception as e:
         return ApiResponse(success=False, error=str(e))
 
-@app.get("/api/analyze/{ticker}", response_model=ApiResponse)
+@router.get("/analyze/{ticker}", response_model=ApiResponse)
 def get_full_analysis(ticker: str):
-    """
-    Unified single-page endpoint returning price, prediction, chart, indicators,
-    model metrics, and backtest performance in a single round-trip.
-    """
     if ticker not in SUPPORTED_STOCKS:
         raise HTTPException(status_code=404, detail=f"Stock '{ticker}' not supported.")
     try:
@@ -133,3 +116,7 @@ def get_full_analysis(ticker: str):
         return ApiResponse(success=True, data=data)
     except Exception as e:
         return ApiResponse(success=False, error=str(e))
+
+# Mount router at BOTH /api and root / so any URL prefix works
+app.include_router(router, prefix="/api")
+app.include_router(router, prefix="")
