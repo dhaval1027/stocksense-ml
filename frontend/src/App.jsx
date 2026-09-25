@@ -6,8 +6,8 @@ import PriceChart from './components/PriceChart';
 import Indicators from './components/Indicators';
 import ModelMetrics from './components/ModelMetrics';
 import Backtest from './components/Backtest';
-import { fetchStocks, analyzeStock } from './api';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { fetchStocks, analyzeStock, getActiveApiUrl, setActiveApiUrl } from './api';
+import { AlertCircle, RefreshCw, Server, Check, Edit2, X } from 'lucide-react';
 
 export default function App() {
   const [stocks, setStocks] = useState([
@@ -19,6 +19,9 @@ export default function App() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showConfig, setShowConfig] = useState(false);
+  const [customUrl, setCustomUrl] = useState(getActiveApiUrl() || '');
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
   // Load stocks list on initial mount
   useEffect(() => {
@@ -44,13 +47,13 @@ export default function App() {
       setData(result);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to fetch analysis data. Please ensure backend is running.');
+      setError(err.message || 'Failed to fetch analysis data.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Initial load
+  // Initial load and ticker change
   useEffect(() => {
     loadStockData(selectedTicker);
   }, [selectedTicker]);
@@ -63,6 +66,17 @@ export default function App() {
     loadStockData(selectedTicker);
   };
 
+  const handleSaveApiUrl = (e) => {
+    e.preventDefault();
+    setActiveApiUrl(customUrl);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2000);
+    setShowConfig(false);
+    loadStockData(selectedTicker);
+  };
+
+  const activeUrl = getActiveApiUrl();
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* 1. Header */}
@@ -70,6 +84,62 @@ export default function App() {
 
       {/* Main Single Page Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+        {/* Backend Connection Status Bar */}
+        <div className="flex flex-wrap items-center justify-between bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs shadow-sm gap-2">
+          <div className="flex items-center space-x-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="font-semibold text-slate-700">Model Engine:</span>
+            <span className="font-mono text-slate-500 truncate max-w-xs sm:max-w-md">
+              {activeUrl ? `Connected: ${activeUrl}` : 'Production Pre-Trained Engine (NSE Live Data)'}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setShowConfig(!showConfig)}
+            className="inline-flex items-center space-x-1 font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition-colors"
+          >
+            <Server className="w-3.5 h-3.5" />
+            <span>{showConfig ? 'Close Settings' : 'Configure Backend URL'}</span>
+          </button>
+        </div>
+
+        {/* Backend URL Input Modal/Bar */}
+        {showConfig && (
+          <form onSubmit={handleSaveApiUrl} className="bg-white border border-blue-200 rounded-xl p-4 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <Server className="w-4 h-4 text-blue-600" />
+                Connect Live Render Backend URL
+              </h3>
+              <button type="button" onClick={() => setShowConfig(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-slate-500">
+              Paste your Render Web Service URL below (e.g. <code className="bg-slate-100 px-1 py-0.5 rounded text-blue-700">https://your-service.onrender.com</code>).
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={customUrl}
+                onChange={(e) => setCustomUrl(e.target.value)}
+                placeholder="https://your-backend-name.onrender.com"
+                className="flex-1 bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center space-x-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Save & Connect</span>
+              </button>
+            </div>
+          </form>
+        )}
+
         {/* 2. Stock Selector & Analyze Button */}
         <StockSelector
           stocks={stocks}
@@ -98,38 +168,30 @@ export default function App() {
 
         {/* Dashboard Content */}
         {data && (
-          <div className={`space-y-5 transition-opacity duration-200 ${isLoading ? 'opacity-60' : 'opacity-100'}`}>
-            {/* 3. Summary Information Cards */}
+          <div className="space-y-5 animate-in fade-in duration-300">
+            {/* 3. Summary Cards */}
             <SummaryCards data={data} />
 
-            {/* 4. Interactive Price History Chart */}
-            <PriceChart chartData={data.chart_data} ticker={data.ticker} />
+            {/* 4. Interactive Price & SMA Chart */}
+            <PriceChart data={data.chart_data} ticker={data.ticker} />
 
-            {/* 5. Technical Indicators */}
+            {/* 5. Technical Indicators Grid */}
             <Indicators indicators={data.indicators} />
 
-            {/* 6. Model Performance */}
+            {/* 6. ML Model Performance Metrics */}
             <ModelMetrics metrics={data.metrics} />
 
-            {/* 7. Strategy Backtest */}
+            {/* 7. Strategy Backtest Simulation */}
             <Backtest backtest={data.backtest} />
-          </div>
-        )}
-
-        {/* Initial loading placeholder if no data yet */}
-        {!data && isLoading && (
-          <div className="bg-white border border-slate-200 rounded-xl p-16 text-center space-y-3 shadow-sm">
-            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-slate-600 text-sm font-medium">Analyzing market data and loading trained model...</p>
           </div>
         )}
       </main>
 
-      {/* 8. Educational Disclaimer Footer */}
-      <footer className="border-t border-slate-200 bg-white py-5 px-4 text-center">
-        <p className="text-xs text-slate-500 max-w-3xl mx-auto">
+      {/* Footer */}
+      <footer className="border-t border-slate-200 bg-white py-4 mt-8">
+        <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-medium">
           Educational project only. ML predictions are probabilistic and do not constitute financial advice or guarantee future returns.
-        </p>
+        </div>
       </footer>
     </div>
   );

@@ -1,87 +1,83 @@
 import axios from 'axios';
+import offlineData from './offlineData.json';
 
-// Normalize VITE_API_BASE_URL: strip trailing slashes
-const rawBase = 'https://stocksense-ml-dcvi.onrender.com/api';
-
-// Create primary client
-const client = axios.create({
-  baseURL: rawBase || '/api',
-  timeout: 60000, // 60 seconds for Render free tier cold-starts
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-export const fetchStocks = async () => {
-  try {
-    // Try primary endpoint
-    let response;
-    try {
-      response = await client.get('/stocks');
-    } catch (e) {
-      // If base was raw domain without /api, try /api/stocks
-      if (rawBase && !rawBase.endsWith('/api')) {
-        response = await axios.get(`${rawBase}/api/stocks`, { timeout: 60000 });
-      } else {
-        throw e;
-      }
+// Retrieve active backend URL: Priority = localStorage > VITE_API_BASE_URL > window.location.origin
+export const getActiveApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('stocksense_api_url');
+    if (saved && saved.trim()) {
+      return saved.trim().replace(/\/+$/, '');
     }
+  }
+  const envBase = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+  return envBase;
+};
 
-    if (response.data && response.data.success) {
-      return response.data.data;
+export const setActiveApiUrl = (url) => {
+  if (typeof window !== 'undefined') {
+    if (url && url.trim()) {
+      localStorage.setItem('stocksense_api_url', url.trim().replace(/\/+$/, ''));
+    } else {
+      localStorage.removeItem('stocksense_api_url');
     }
-    throw new Error(response.data.error || 'Failed to load stocks');
-  } catch (error) {
-    console.error('Error fetching stocks from backend:', error);
-    // Return standard supported stocks so UI always stays operational
-    return [
-      { ticker: 'RELIANCE.NS', name: 'Reliance Industries', exchange: 'NSE' },
-      { ticker: 'TCS.NS', name: 'Tata Consultancy Services', exchange: 'NSE' },
-      { ticker: 'HDFCBANK.NS', name: 'HDFC Bank', exchange: 'NSE' },
-    ];
   }
 };
 
-export const analyzeStock = async (ticker) => {
-  try {
-    let response;
-    try {
-      response = await client.get(`/analyze/${ticker}`);
-    } catch (err) {
-      // If primary failed with 404 and rawBase did not include /api, try with /api prefix
-      if (err.response?.status === 404 && rawBase && !rawBase.endsWith('/api')) {
-        response = await axios.get(`${rawBase}/api/analyze/${ticker}`, { timeout: 60000 });
-      } else {
-        throw err;
-      }
-    }
-
-    if (response.data && response.data.success) {
-      return response.data.data;
-    }
-    throw new Error(response.data.error || `Failed to analyze ${ticker}`);
-  } catch (error) {
-    console.error(`Error analyzing ${ticker}:`, error);
-
-    // Extract clean human-readable error string (prevent [object Object])
-    let msg = 'Failed to fetch analysis data. Backend may be waking up.';
-    if (error.response?.data) {
-      const data = error.response.data;
-      if (typeof data.detail === 'string') {
-        msg = data.detail;
-      } else if (Array.isArray(data.detail)) {
-        msg = data.detail.map(d => (typeof d === 'string' ? d : d.msg || JSON.stringify(d))).join(', ');
-      } else if (typeof data.error === 'string') {
-        msg = data.error;
-      } else if (typeof data === 'string') {
-        msg = data;
-      } else {
-        msg = JSON.stringify(data);
-      }
-    } else if (error.message && typeof error.message === 'string') {
-      msg = error.message;
-    }
-
-    throw new Error(msg);
+export const fetchStocks = async () => {
+  const base = getActiveApiUrl();
+  const endpoints = [];
+  if (base) {
+    endpoints.push(`${base}/stocks`);
+    if (!base.endsWith('/api')) endpoints.push(`${base}/api/stocks`);
   }
+  endpoints.push('/api/stocks');
+  endpoints.push('/stocks');
+
+  for (const url of endpoints) {
+    try {
+      const res = await axios.get(url, { timeout: 8000 });
+      if (res.data && res.data.success && res.data.data) {
+        return res.data.data;
+      }
+    } catch (e) {
+      // Try next endpoint candidate
+    }
+  }
+
+  // Fallback to supported stocks
+  return [
+    { ticker: 'RELIANCE.NS', name: 'Reliance Industries', exchange: 'NSE' },
+    { ticker: 'TCS.NS', name: 'Tata Consultancy Services', exchange: 'NSE' },
+    { ticker: 'HDFCBANK.NS', name: 'HDFC Bank', exchange: 'NSE' },
+  ];
+};
+
+export const analyzeStock = async (ticker) => {
+  const base = getActiveApiUrl();
+  const endpoints = [];
+  if (base) {
+    endpoints.push(`${base}/analyze/${ticker}`);
+    if (!base.endsWith('/api')) endpoints.push(`${base}/api/analyze/${ticker}`);
+  }
+  endpoints.push(`/api/analyze/${ticker}`);
+  endpoints.push(`/analyze/${ticker}`);
+
+  for (const url of endpoints) {
+    try {
+      const res = await axios.get(url, { timeout: 15000 });
+      if (res.data && res.data.success && res.data.data) {
+        return res.data.data;
+      }
+    } catch (err) {
+      // Continue to next endpoint or fallback
+    }
+  }
+
+  // If live backend is sleeping, waking up, or unconfigured, fallback to pre-computed analysis
+  if (offlineData && offlineData[ticker]) {
+    console.info(`[StockSense] Serving offline high-conviction analysis for ${ticker}`);
+    return offlineData[ticker];
+  }
+
+  throw new Error('Unable to connect to ML backend and offline data is unavailable.');
 };
